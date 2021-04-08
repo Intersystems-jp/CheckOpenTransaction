@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="ISJ.JournalUtility">
+<TimeCreated>65842,52982.783323</TimeCreated>
+
+<Method name="GetOpenTransaction">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+    set status=$$$OK
+    #dim ex As %Exception.AbstractException
+    #dim rset As %ResultSet
+    try {
+        //現在のジャーナルファイル
+        write !,"現在のジャーナルファイル名：",
+            ##class(%SYS.Journal.System).GetCurrentFileName(),!!
+        
+        // Open中トランザクション調査
+        // WIJに記録されているジャーナルの情報を取得
+        $$$ThrowOnError(##class(%SYS.Journal.System).GetImageJournalInfo(.filename,.jrnoffset,.jrnfilecount,.opentranoffset,.opentranfilecount))
+        if $get(opentranoffset)="" {
+            write !,"オープン中トランザクションはありません",!
+            return status
+        }
+
+        //ファイルカウントに差（jrnfilecount-opentranfilecount>0 ）がある場合
+        //　古いジャーナルファイルにオープン中トランザクションがあるため、対象ファイル名を探す
+        if jrnfilecount-opentranfilecount>0 {
+            set loopcnt=jrnfilecount-opentranfilecount
+            for i=1:1:loopcnt {
+                set currentfile=filename
+                $$$ThrowOnError(##class(%SYS.Journal.File).GetPrev(currentfile,.filename))
+            }
+        }
+
+        write "〇〇　オープン中の対象ジャーナルレコード一覧　〇〇",!
+
+        set rset=##class(%ResultSet).%New("%SYS.Journal.Record:List")
+        do rset.%Execute(filename,,,,$LB("Address","=",opentranoffset))
+        write !,"=== File Name : ",filename," ===",!
+        write "Address : TimeStamp : ProcessID : RemoteSystemID : TypeName : Transaction",!
+        while rset.%Next() {
+            write rset.%Get("Address")," : ",
+                rset.%Get("TimeStamp")," : ",
+                rset.%Get("ProcessID")," : ",
+                rset.%Get("RemoteSystemID")," : ",
+                rset.%Get("TypeName")," : ",
+                rset.%Get("InTransaction"),!
+        }
+    }
+    catch ex {
+        set status=ex.AsStatus()
+    }
+    return status
+]]></Implementation>
+</Method>
+</Class>
+</Export>

@@ -14,6 +14,8 @@
 
 管理ポータル／スタジオを使用している場合は、インポートメニューで[サンプルコード（JounalUtility.cls）](./JournalUtility.cls) を指定してインポートを行います。
 
+> 2016.1以前のバージョンでインポートを行う場合は、[ISJ.JournalUtility.xml](./ISJ.JournalUtility.xml)をスタジオ／管理ポータルからインポートしてご利用ください。
+
 
 VSCode を使用している場合は、[settings.json](./.vscode/settings.json) に接続先情報を指定し、接続を確認した後、[サンプルコード（JounalUtility.cls）](./JournalUtility.cls) を保存することでインポートできます。
 
